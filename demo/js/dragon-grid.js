@@ -7,7 +7,7 @@
 //  Terry Rosen
 //  https://github.com/tcrosen/dragon-grid
 //
-//  A jQuery grid plugin that breathes fire and is built on Twitter Bootstrap.
+//  A jQuery grid plugin built on Twitter Bootstrap...and it breathes fire.
 //
 //
 
@@ -30,7 +30,6 @@
     //
     //  Constructor
     //
-
     function DragonGrid(element, options) {
         this.$element = $(element);
         this.options = $.extend({}, defaults, options);
@@ -47,8 +46,8 @@
 
         loadData: function(el, options) {
             var that = this,
-                template = Hogan.compile(options.rowTmpl);
-            $tbody = el.find('tbody');
+                template = Hogan.compile(options.rowTmpl),
+                $tbody = el.find('tbody');
 
             $tbody.empty();
 
