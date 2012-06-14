@@ -1,17 +1,31 @@
-$(function() {
-    var data = [{
-        ID: 1,
-        Name: 'Terry'
+var data = [{
+        id: 1,
+        name: 'Terry'
     }, {
-        ID: 2,
-        Name: 'Mark'
+        id: 2,
+        name: 'Mark'
     }, {
-        ID: 3,
-        Name: 'Jacob'
+        id: 3,
+        name: 'Jacob'
+    }, {
+        id: 4,
+        name: 'Joe'
+    }, {
+        id: 5,
+        name: 'Jason'
+    }, {
+        id: 6,
+        name: 'Zeus'
     }];
 
+$(function() {
     $('#test-grid').dragonGrid({
         cssClass: 'table table-striped',
-        dataSource: data
+        cols: [{ field: 'id', header: 'ID' }, { field: 'name', header: 'Name' }],
+        ajax: {
+            type: 'GET',
+            url: 'remote.json',
+            dataType: 'json'
+        }
     });
 });

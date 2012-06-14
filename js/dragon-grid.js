@@ -1,4 +1,5 @@
 //
+//
 //  dragon-grid.js
 //
 //  Dragon Grid
@@ -17,42 +18,114 @@
 
     //-------------------------------------------------------------------------------------
     //
-    //  Default options
+    //  Plugin declaration & default options
     //
     var dragonGrid = 'dragonGrid',
         defaults = {
             cssClass: 'table',
-            rowTmpl: '<tr><td>{{ID}}</td><td>{{Name}}</td></tr>',
-            dataSource: []
+            cols: [],
+            dataSource: [],
+            ajax: $.extend({}, $.ajaxSettings, {
+                data: {
+                    page: 1,
+                    maxRows: 10,
+                    orderBy: '',
+                    where: ''
+                }
+            })
         };
 
     //-------------------------------------------------------------------------------------
     //
     //  Constructor
     //
+
     function DragonGrid(element, options) {
         this.$element = $(element);
-        this.options = $.extend({}, defaults, options);
-
+        this.options = $.extend(true, {}, defaults, options);
         this.init();
+        this.listen();
     }
 
     DragonGrid.prototype = {
 
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Initialize the grid
+        //
         init: function() {
+            var that = this;
             this.$element.addClass(this.options.cssClass);
-            this.loadData(this.$element, this.options);
+            that.renderHeader();
+            this.loadData(function(resp) {                
+                that.renderBody(resp);
+            });
         },
 
-        loadData: function(el, options) {
-            var that = this,
-                template = Hogan.compile(options.rowTmpl),
-                $tbody = el.find('tbody');
+        loadData: function(success) {
+            $.ajax({
+                type: this.options.ajax.type,
+                url: this.options.ajax.url,
+                data: this.options.ajax.data,
+                dataType: this.options.ajax.dataType,
+                success: success
+            });
+        },
 
-            $tbody.empty();
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Render the grid
+        //
+        renderBody: function(dataSource) {
+            var that = this;
 
-            $(options.dataSource).each(function() {
-                $tbody.append(template.render(this));
+            var $tbody = this.$element.find('tbody');
+
+            if ($tbody.length > 0) {
+                $tbody.empty();
+            } else {
+                $tbody = this.$element.append('<tbody></tbody>');
+            }
+
+            var data = dataSource.data || dataSource;
+            $(data).each(function(i, obj) {
+                var $row = $('<tr></tr>');
+
+                $(that.options.cols).each(function(x, col) {
+                    $row.append('<td>' + obj[col.field] + '</td>');
+                });
+
+                $tbody.append($row);
+            });
+        },
+
+        renderHeader: function() {
+            var $header = $('<thead></thead>');
+
+            $.map(this.options.cols, function(col, i) {
+                $header.append('<th data-field="' + col.field + '">' + (col.header || col.field) + '</th>');
+            });
+
+            this.$element.append($header);
+        },
+
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Listens for user events
+        //
+        listen: function() {
+            this.$element.on('click', 'thead th', $.proxy(this.headerClick, this));
+        },
+
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Handles clicking on the results list
+        //
+        headerClick: function(e) {
+            var that = this;
+            this.options.ajax.data.orderBy = $(e.currentTarget).attr('data-field');
+            this.loadData(function(resp) {                
+                that.renderBody(resp);
             });
         }
     };
