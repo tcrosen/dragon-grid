@@ -10,7 +10,7 @@ $(function() {
         Name: 'Jacob'
     }];
 
-    $('.dragon-grid').dragonGrid({
+    $('#test-grid').dragonGrid({
         cssClass: 'table table-striped',
         dataSource: data
     });
