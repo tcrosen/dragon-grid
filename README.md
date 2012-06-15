@@ -25,10 +25,8 @@ How simple is it?
     <script src="jquery.js"></script>
     <script src="dragon-grid.js"></script>
 
-	var mySource = [{ id: 1, name: 'Terry'}, { id: 2, name: 'Mark'}, { id: 3, name: 'Jacob'}];
-
 	$('#myTable').dragonGrid({
-		source: mySource
+		source: [{ id: 1, name: 'Terry'}, { id: 2, name: 'Mark'}, { id: 3, name: 'Jacob'}]
 	});
 
 That looks way too simple, what could it possibly produce?
@@ -49,3 +47,28 @@ Wow! WTF did this magical grid do to make all that happen?
 1. Applied the Bootstrap classes `table table-striped` cause I'm sure most people prefer alternating row styles by default.
 2. No columns were specified, so it used the property names with camel casing as headers.  Ya that's right, camel casing.  Now you can be insanely lazy.
 3. Sorting functionality was added.  By default the grid makes each column sortable.  If you supply a local dataset it handles the sorting for you.  Otherwise if you use a remote data source it passes an *order by* statement (more on this in documentation).
+
+What are some other options?
+-----------------------------
+
+Development is still ongoing, but as of this writing (see latest update date above) these are the options:
+
+    defaults = {
+            ajax: $.extend(true, {}, $.ajaxSettings, {
+                data: {
+                    page: 1,
+                    maxRows: 10,
+                    orderBy: '',
+                    where: ''
+                }
+            }),
+            colDefaults: {
+                field: null,
+                header: null,
+                sortable: true,
+                sortDir: 'asc'
+            },
+            cols: [],
+            cssClass: 'table table-striped',
+            source: []
+        };

@@ -18,8 +18,7 @@ var localData = [{
     "name": "Zeus"
 }];
 
-var mySource = [{ id: 1, name: 'Terry'}, { id: 2, name: 'Mark'}, { id: 3, name: 'Jacob'}];
-
+// Used to sort the AJAX request
 function localSorter(property, dir) {
     if (dir == 'desc') {
         return function(a, b) {
@@ -33,11 +32,15 @@ function localSorter(property, dir) {
 }
 
 $(function() {
+    
+    // Basic
     $('#test-grid').dragonGrid({
-        source: mySource
+        source: [{ id: 1, name: 'Terry'}, { id: 2, name: 'Mark'}, { id: 3, name: 'Jacob'}];
     });
 
-/*    $.mockjax({
+    /*
+    // Mock an AJAX request
+    $.mockjax({
         url: '/people/list',
         response: function(settings) {
             console.log(settings)
@@ -47,8 +50,9 @@ $(function() {
         }
     });
 
+    // Using some more of the features    
     $('#test-grid').dragonGrid({
-        cssClass: 'table table-striped',
+        cssClass: 'table table-striped table-condensed',
         cols: [{
             field: 'id',
             header: 'ID',
@@ -60,5 +64,6 @@ $(function() {
             type: 'POST',
             url: '/people/list'
         }
-    });*/
+    });
+    */
 });
