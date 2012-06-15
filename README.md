@@ -53,7 +53,12 @@ What are some other options?
 
 Development is still ongoing, but as of this writing (see latest update date above) these are the options:
 
-    defaults = {
+    	defaults = {
+    		//
+    		// 	Extends a jQuery object with your settings and jQuery AJAX defaults.
+    		//		Ya that's right, you don't have to learn a custom AJAX settings object to use this beast.
+    		//		The ajax.data object is for passing params to a remote query.
+    		//
             ajax: $.extend(true, {}, $.ajaxSettings, {
                 data: {
                     page: 1,
@@ -62,13 +67,27 @@ Development is still ongoing, but as of this writing (see latest update date abo
                     where: ''
                 }
             }),
+            //
+            //	Default values that will be applied to all columns, specifying columns individually will overwrite these.
+            //
             colDefaults: {
                 field: null,
                 header: null,
                 sortable: true,
                 sortDir: 'asc'
             },
+            //
+            //	Specify columns individually with the same options as the colDefaults.  All values are optional except 'field'.
+            //    Ex.  cols: [{ field: first_name, header: 'First Name' },
+            //				  { field: phone, sortable: false }]
+            //
             cols: [],
+            //
+            //	Can add any class(es) you want to the table.
+            //
             cssClass: 'table table-striped',
+            //
+            //	If you specify a local datasource here it will use this instead of the ajax.
+            //
             source: []
         };
