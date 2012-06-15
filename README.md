@@ -1,10 +1,16 @@
-Dragon Grid (ALPHA)
+Dragon Grid
 ===============
 
-v1.0.0 (June 2012)<br />
+v1.0.0<br />
 Terry Rosen [@rerrify](https://twitter.com/rerrify)
 
 A jQuery grid plugin built on Twitter Bootstrap...made from real dragons.<br />
+
+Latest Update (June 15, 2012)
+-------------------------
+
++ **Development status**: Current version is usable but very rough - **USE AT YOUR OWN RISK!**
++ **In progress**:  Unit tests and documentation before adding any new features.
 
 Why did you create another grid plugin? 
 -----------------
