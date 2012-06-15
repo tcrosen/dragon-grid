@@ -37,7 +37,7 @@
                 sortDir: 'asc'
             },
             cols: [],
-            cssClass: 'table',
+            cssClass: 'table table-striped',
             source: []
         };
 
@@ -119,11 +119,8 @@
             var that = this;
 
             if (!that.options.cols.length) {
-                for (var prop in that.options.source[0]) {
-                    that.cols.push($.extend({
-                        field: prop,
-                        header: that.toCamel(prop)
-                    }, colDefaults));
+                for (var prop in that.options.source[0]) {   
+                    that.options.cols.push({ field: prop });
                 }
             }
 
