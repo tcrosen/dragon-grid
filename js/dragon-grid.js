@@ -22,17 +22,23 @@
     //
     var dragonGrid = 'dragonGrid',
         defaults = {
-            cssClass: 'table',
-            cols: [],
-            dataSource: [],
-            ajax: $.extend({}, $.ajaxSettings, {
+            ajax: $.extend(true, {}, $.ajaxSettings, {
                 data: {
                     page: 1,
                     maxRows: 10,
                     orderBy: '',
                     where: ''
                 }
-            })
+            }),
+            colDefaults: {
+                field: null,
+                header: null,
+                sortable: true,
+                sortDir: 'asc'
+            },
+            cols: [],
+            cssClass: 'table',
+            source: []
         };
 
     //-------------------------------------------------------------------------------------
@@ -43,6 +49,8 @@
     function DragonGrid(element, options) {
         this.$element = $(element);
         this.options = $.extend(true, {}, defaults, options);
+        this.cols = [];
+        this.isRemoteData = false;
         this.init();
         this.listen();
     }
@@ -54,15 +62,35 @@
         //  Initialize the grid
         //
         init: function() {
-            var that = this;
             this.$element.addClass(this.options.cssClass);
-            that.renderHeader();
-            this.loadData(function(resp) {                
-                that.renderBody(resp);
-            });
+            this.loadData($.proxy(this.createGrid, this));
         },
 
-        loadData: function(success) {
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Load the data source
+        //
+        loadData: function(callback) {
+            var that = this;
+
+            // If a local datasource was specified use it, otherwise load from remote source
+            //  This is done first because if no columns are included in the options the datasource is used to define them 
+            if (that.options.source.length > 0) {
+                callback();
+            } else {
+                that.isRemoteData = true;
+                that.loadRemoteData(function(resp) {
+                    that.options.source = resp.data || resp;
+                    callback();
+                });
+            }
+        },
+
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Retrieve data from remote source
+        //
+        loadRemoteData: function(success) {
             $.ajax({
                 type: this.options.ajax.type,
                 url: this.options.ajax.url,
@@ -74,36 +102,62 @@
 
         //-------------------------------------------------------------------------------------------
         //
-        //  Render the grid
+        //  Run the various pieces required to create the grid object
         //
-        renderBody: function(dataSource) {
+        createGrid: function() {
+            this.defineCols();
+            this.renderHeader();
+            this.renderBody();
+        },
+
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Defines the grid columns
+        //  If no columns were defined, loop through the first datasource object properties and create them
+        //
+        defineCols: function() {
             var that = this;
 
-            var $tbody = this.$element.find('tbody');
-
-            if ($tbody.length > 0) {
-                $tbody.empty();
-            } else {
-                $tbody = this.$element.append('<tbody></tbody>');
+            if (!that.options.cols.length) {
+                for (var prop in that.options.source[0]) {
+                    that.cols.push($.extend({
+                        field: prop,
+                        header: that.toCamel(prop)
+                    }, colDefaults));
+                }
             }
 
-            var data = dataSource.data || dataSource;
-            $(data).each(function(i, obj) {
-                var $row = $('<tr></tr>');
-
-                $(that.options.cols).each(function(x, col) {
-                    $row.append('<td>' + obj[col.field] + '</td>');
-                });
-
-                $tbody.append($row);
+            $(that.options.cols).each(function() {
+                var col = this;
+                col.header = this.header || that.toCamel(this.field);
+                col = $.extend({}, that.options.colDefaults, this);
+                that.cols.push(col);
             });
         },
 
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Render the table header
+        //
         renderHeader: function() {
-            var $header = $('<thead></thead>');
+            var $header = this.$element.find('thead');
 
-            $.map(this.options.cols, function(col, i) {
-                $header.append('<th data-field="' + col.field + '">' + (col.header || col.field) + '</th>');
+            if ($header.length > 0) {
+                $header.empty();
+            } else {
+                $header = $('<thead></thead>');
+            }
+
+            $.map(this.cols, function(col, i) {
+                var $col;
+
+                if (col.sortable) {
+                    $col = $('<th data-field="' + col.field + '"><a href="#">' + (col.header || col.field) + '</a>&nbsp; <i></i></th>');
+                } else {
+                    $col = $('<th data-field="' + col.field + '">' + (col.header || col.field) + '</th>');
+                }
+
+                $header.append($col);
             });
 
             this.$element.append($header);
@@ -111,21 +165,102 @@
 
         //-------------------------------------------------------------------------------------------
         //
-        //  Listens for user events
+        //  Render the table body
         //
-        listen: function() {
-            this.$element.on('click', 'thead th', $.proxy(this.headerClick, this));
+        renderBody: function() {
+            var that = this;
+
+            var $tbody = this.$element.find('tbody');
+
+            if ($tbody.length > 0) {
+                $tbody.empty();
+            } else {
+                $tbody = $('<tbody></tbody>');
+            }
+
+            $(that.options.source).each(function(i, obj) {
+                var $row = $('<tr id="' + (that.options.rowIdentifier ? obj[that.options.rowIdentifier] : 'dragon-grid-row-' + i) + '"></tr>');
+
+                $(that.cols).each(function(x, col) {
+                    $row.append('<td>' + obj[col.field] + '</td>');
+                });
+
+                $tbody.append($row);
+            });
+
+            that.$element.append($tbody);
         },
 
         //-------------------------------------------------------------------------------------------
         //
-        //  Handles clicking on the results list
+        //  Sorts the local datasource or retrieves remote source with new params
+        //
+        sorter: function(field, dir) {
+            var that = this;
+
+            if (that.isRemoteData) {
+                that.options.ajax.data.orderBy = field + ' ' + dir;
+                that.loadRemoteData(function(resp) {
+                    that.options.source = resp.data || resp;
+                    that.renderBody();
+                });
+            } else {
+                that.options.source.sort(that.localSorter(field, dir));
+                that.renderBody();
+            }
+        },
+
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Custom client sorter for a local dataset
+        //
+        localSorter: function(property, dir) {
+            if (dir == 'desc') {
+                return function(a, b) {
+                    return (a[property] > b[property]) ? -1 : (a[property] < b[property]) ? 1 : 0;
+                }
+            } else {
+                return function(a, b) {
+                    return (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+                }
+            }
+        },
+
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Listens for user actions
+        //
+        listen: function() {
+            this.$element.on('click', 'thead th a', $.proxy(this.headerClick, this));
+        },
+
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Column header click
         //
         headerClick: function(e) {
-            var that = this;
-            this.options.ajax.data.orderBy = $(e.currentTarget).attr('data-field');
-            this.loadData(function(resp) {                
-                that.renderBody(resp);
+            e.preventDefault();
+
+            var $th = $(e.currentTarget).parent();
+
+            if ($th.attr('data-sort-dir') === 'asc') {
+                $th.attr('data-sort-dir', 'desc');  
+                $th.find('i').attr('class', 'icon-chevron-down');              
+            } else {
+                $th.attr('data-sort-dir', 'asc');
+                $th.find('i').attr('class', 'icon-chevron-up');
+            }            
+
+            this.sorter($th.attr('data-field'), $th.attr('data-sort-dir'));
+        },
+
+        //-------------------------------------------------------------------------------------------
+        //
+        //  Utils
+        //
+        toCamel: function(str) {
+            return str.replace(/(?:^|\s)\w/g, function(match) {
+                return match.toUpperCase();
             });
         }
     };
