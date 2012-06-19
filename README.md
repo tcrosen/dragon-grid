@@ -111,7 +111,3 @@ Development is still ongoing, but as of this writing (see latest update date abo
             //
             source: []
         };
-
-What do you mean other grids are complicated?  What do other "starter" grids look like?  
------------------------------
-Well here's [My First Grid](http://www.trirand.com/jqgridwiki/doku.php?id=wiki:first_grid) from the documentation of a mature plugin called [jqGrid](http://www.trirand.com/jqgridwiki/doku.php) that's been around a long time.  
