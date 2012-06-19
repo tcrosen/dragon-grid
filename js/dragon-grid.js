@@ -1,6 +1,6 @@
 //
-//
 //  dragon-grid.js
+//  
 //
 //  Dragon Grid
 //  
@@ -8,7 +8,7 @@
 //  Terry Rosen
 //  https://github.com/tcrosen/dragon-grid
 //
-//  A jQuery grid plugin built on Twitter Bootstrap...and it breathes fire.
+//  A dead simple jQuery grid plugin built on Twitter Bootstrap...and it breathes fire.
 //
 //
 
@@ -22,22 +22,60 @@
     //
     var dragonGrid = 'dragonGrid',
         defaults = {
+
+            //
+            //  Optional - can use a local datasource instead
+            //
+            //  Extends a jQuery object with your settings and jQuery AJAX defaults.
+            //      Ya that's right, you don't have to learn a custom AJAX settings object to use this beast.
+            //      The ajax.data custom object is used for passing paging/sorting params to the server query.
+            //
             ajax: $.extend(true, {}, $.ajaxSettings, {
-                data: {
-                    page: 1,
+                data: {                    
+                    page: 1,                    
                     maxRows: 10,
                     orderBy: '',
                     where: ''
                 }
             }),
+
+            //
+            //  Optional - will use default values
+            //
+            //  Default values that will be applied to all columns, 
+            //      specifying columns individually will overwrite these.
+            //
             colDefaults: {
                 field: null,
                 header: null,
                 sortable: true,
                 sortDir: 'asc'
             },
+
+            //
+            //  Optional - will use data source properties & default values to generate columns
+            //
+            //  Specify columns individually with the same options as the colDefaults.  
+            //      All values are optional except 'field'.
+            //      
+            //      Ex.  cols: [{ field: first_name, header: 'First Name' },
+            //                  { field: phone, sortable: false }]
+            //
             cols: [],
+
+            //
+            //  Optional - will use default value
+            //
+            //  Can add any class(es) you want to the table.
+            //
             cssClass: 'table table-striped',
+
+            //
+            //  Optional - can use AJAX source instead 
+            //                  you can also leave this empty but your grid will suck :(
+            //
+            //  If you specify a value here it will use this instead of the AJAX.
+            //
             source: []
         };
 
@@ -63,6 +101,9 @@
         //
         init: function() {
             this.$element.addClass(this.options.cssClass);
+
+            //  Load data first because if no column definitions 
+            //      are specified the datasource is used to define them
             this.loadData($.proxy(this.createGrid, this));
         },
 
@@ -73,8 +114,6 @@
         loadData: function(callback) {
             var that = this;
 
-            // If a local datasource was specified use it, otherwise load from remote source
-            //  This is done first because if no columns are included in the options the datasource is used to define them 
             if (that.options.source.length > 0) {
                 callback();
             } else {
@@ -113,7 +152,8 @@
         //-------------------------------------------------------------------------------------------
         //
         //  Defines the grid columns
-        //  If no columns were defined, loop through the first datasource object properties and create them
+        //      If no columns were defined, loop through the first datasource object
+        //      and use its properties
         //
         defineCols: function() {
             var that = this;
@@ -253,7 +293,7 @@
 
         //-------------------------------------------------------------------------------------------
         //
-        //  Utils
+        //  Util - turns a string into camel case notation 
         //
         toCamel: function(str) {
             return str.replace(/(?:^|\s)\w/g, function(match) {
@@ -262,6 +302,10 @@
         }
     };
 
+    //-------------------------------------------------------------------------------------------
+    //
+    //  Best practice - protects against duplicate namespacing
+    //
     $.fn[dragonGrid] = function(options) {
         return this.each(function() {
             if (!$.data(this, 'plugin_' + dragonGrid)) {
