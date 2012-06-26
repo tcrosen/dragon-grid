@@ -9,7 +9,7 @@ A jQuery grid plugin built on Twitter Bootstrap...made from real dragons.<br />
 Latest Update (June 19, 2012)
 -------------------------
 
-+ **Development status**: Current version is usable but very rough - **USE AT YOUR OWN RISK!**
++ **Development status**: Current version is still in Beta
 + **In progress**:  Unit tests and documentation before adding any new features.
 
 Why did you create another grid plugin? 
